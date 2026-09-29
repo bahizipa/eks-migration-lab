@@ -1,0 +1,24 @@
+# The "OVH" side: one VM, docker compose, local Postgres, no IaC. Typical legacy shape.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: notes
+      POSTGRES_PASSWORD: notes
+      POSTGRES_DB: notes
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+      - ./seed.sql:/docker-entrypoint-initdb.d/seed.sql:ro
+    ports:
+      - "5432:5432"
+  api:
+    build: ./app
+    environment:
+      DATABASE_URL: postgresql://notes:notes@db:5432/notes
+      APP_ENV: legacy-ovh
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+volumes:
+  dbdata:
